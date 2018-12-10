@@ -19,9 +19,8 @@ public:
 		mPoints{points}
 	{
 		resetBounds();
-		for (const auto& p : mPoints) {
+		for (const auto& p : mPoints)
 			setBounds(p);
-		}
 	}
 
 	void display() const
@@ -39,14 +38,12 @@ public:
 
 	bool findPoint(int x, int y) const
 	{
-		for (const auto& p : mPoints) {
-			if (p.x == x && p.y == y)
-				return true;
-		}
-		return false;
+		return std::find_if(std::begin(mPoints),
+							std::end(mPoints),
+							[x, y](const auto& p) { return (p.x == x && p.y == y); }) != std::end(mPoints);
 	}
 
-	void move()
+	void advance()
 	{
 		resetBounds();
 		for (auto& p : mPoints) {
@@ -98,7 +95,7 @@ int main()
 	Sky sky{points};
 	int seconds = 0;
 	while (sky.height() > 10) {
-		sky.move();
+		sky.advance();
 		++seconds;
 	}
 
