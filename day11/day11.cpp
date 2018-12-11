@@ -27,8 +27,7 @@ static int squareTotalPower(int x, int y, int squareSize, const Grid& grid)
 static std::tuple<int, int, int> findMaxPowerSquare(int serial, int size)
 {
 	Grid grid{HEIGHT + 1, std::vector<int>(HEIGHT + 1, 0)};
-	std::tuple<int, int, int> maxSquare;
-	int maxSquarePower = 0;
+	std::tuple<int, int, int> maxSquare{0, 0, 0};
 
 	for (int y = HEIGHT; y > 0; --y) {
 		for (int x = WIDTH; x > 0; --x) {
@@ -38,10 +37,8 @@ static std::tuple<int, int, int> findMaxPowerSquare(int serial, int size)
 			grid[y][x] = power;
 			if (topLeftOfSquare(x, y, size)) {
 				int squarePower = squareTotalPower(x, y, size, grid);
-				if (squarePower > maxSquarePower) {
-					maxSquarePower = squarePower;
+				if (squarePower > std::get<2>(maxSquare))
 					maxSquare = {x, y, squarePower};
-				}
 			}
 		}
 	}
@@ -60,7 +57,7 @@ int main(int argc, char** argv)
 
 	int maxX, maxY, maxSize;
 	int maxPower = 0;
-	for (int squareSize = 1; squareSize <= 300; ++squareSize) {
+	for (int squareSize = 1; squareSize <= WIDTH; ++squareSize) {
 		auto [x, y, power] = findMaxPowerSquare(serial, squareSize);
 		if (power > maxPower) {
 			maxPower = power;
