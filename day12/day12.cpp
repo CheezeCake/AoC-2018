@@ -2,11 +2,13 @@
 #include <string>
 #include <unordered_map>
 
+using Rules = std::unordered_map<std::string, char>;
+
 class State
 {
 	std::string mState;
 	int mStartId;
-	const std::unordered_map<std::string, char> mRules;
+	const Rules mRules;
 
 	static std::string getLLCRR(std::size_t pot, const std::string& state)
 	{
@@ -30,7 +32,7 @@ class State
 
 public:
 	State(const std::string& initialState,
-		  const std::unordered_map<std::string, char>& rules) :
+		  const Rules& rules) :
 		mState{initialState},
 		mStartId{0},
 		mRules{rules}
@@ -95,7 +97,7 @@ std::string parseInitialState()
 	return line.substr(line.find(':') + 2);
 }
 
-void parseRules(std::unordered_map<std::string, char>& rules)
+void parseRules(Rules& rules)
 {
 	std::string line;
 	while (std::getline(std::cin, line)) {
@@ -109,7 +111,7 @@ void parseRules(std::unordered_map<std::string, char>& rules)
 int main()
 {
 	const std::string initialState{parseInitialState()};
-	std::unordered_map<std::string, char> rules;
+	Rules rules;
 	parseRules(rules);
 
 	State part1{initialState, rules};
