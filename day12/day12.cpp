@@ -8,7 +8,7 @@ class State
 	int mStartId;
 	std::unordered_map<std::string, char> mRules;
 
-	static std::string getLLCRR(int pot, const std::string& state)
+	static std::string getLLCRR(std::size_t pot, const std::string& state)
 	{
 		if (pot == 0)
 			return ".." + state.substr(0, 3);
