@@ -122,11 +122,6 @@ public:
 	{
 		return mStartId;
 	}
-
-	const std::string& getStateString() const
-	{
-		return mState;
-	}
 };
 
 std::string parseInitialState()
