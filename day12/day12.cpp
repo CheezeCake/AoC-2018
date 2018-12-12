@@ -99,10 +99,10 @@ public:
 		return !repeating;
 	}
 
-	std::size_t getSum()
+	std::size_t getSum(std::size_t startId)
 	{
 		std::size_t sum = 0;
-		auto id = mStartId;
+		auto id = startId;
 
 		for (char c : mState) {
 			if (c == '#')
@@ -111,6 +111,11 @@ public:
 		}
 
 		return sum;
+	}
+
+	std::size_t getSum()
+	{
+		return getSum(mStartId);
 	}
 
 	int getStartId()
@@ -145,7 +150,7 @@ void parseRules(std::unordered_map<std::string, char>& rules)
 
 int main()
 {
-	std::string initialState{parseInitialState()};
+	const std::string initialState{parseInitialState()};
 	std::unordered_map<std::string, char> rules;
 	parseRules(rules);
 
@@ -158,14 +163,7 @@ int main()
 	unsigned gen = 1;
 	while (st.advance())
 		++gen;
-
-	std::size_t sum = 0;
-	std::size_t id = static_cast<std::size_t>(st.getStartId()) + (50'000'000'000 - gen);
-	for (char c : st.getStateString()) {
-		if (c == '#')
-			sum += id;
-		++id;
-	}
-
-	std::cout << "part 2: " << sum << '\n';
+	std::cout << "part 2: "
+		<< st.getSum(static_cast<std::size_t>(st.getStartId()) + (50'000'000'000 - gen))
+		<< '\n';
 }
