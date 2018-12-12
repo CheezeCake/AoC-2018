@@ -99,7 +99,7 @@ public:
 		return !repeating;
 	}
 
-	std::size_t getSum(std::size_t startId)
+	std::size_t getSum(std::size_t startId) const
 	{
 		std::size_t sum = 0;
 		auto id = startId;
@@ -113,17 +113,17 @@ public:
 		return sum;
 	}
 
-	std::size_t getSum()
+	std::size_t getSum() const
 	{
 		return getSum(mStartId);
 	}
 
-	int getStartId()
+	int getStartId() const
 	{
 		return mStartId;
 	}
 
-	const std::string& getStateString()
+	const std::string& getStateString() const
 	{
 		return mState;
 	}
