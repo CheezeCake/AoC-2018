@@ -21,6 +21,13 @@ class State
 		return state.substr(pot - 2, 5);
 	}
 
+	static std::string plantSpan(const std::string& state)
+	{
+		auto firstPlant = state.find('#');
+		auto lastPlant = state.rfind('#');
+		return state.substr(firstPlant, lastPlant - firstPlant);
+	}
+
 public:
 	State(const std::string& initialState,
 		  const std::unordered_map<std::string, char>& rules) :
@@ -37,42 +44,17 @@ public:
 		std::string newState;
 		newState.reserve(mState.length()+4);
 
-		char first = mRules.at("...."+mState.substr(0, 1));
-		char second = mRules.at("..."+mState.substr(0, 2));
-		if (first == '#') {
-			newState.push_back(first);
-			newState.push_back(second);
+		if (mState.find('#') < 2) {
+			mState = ".." + mState;
 			newStartId -= 2;
 		}
-		else if (second == '#') {
-			newState.push_back(second);
-			--newStartId;
-		}
+		if (mState.rfind('#') >= mState.length() - 2)
+			mState.append("..");
 
 		for (std::size_t pot = 0; pot < mState.length(); ++pot)
 			newState.push_back(mRules.at(getLLCRR(pot, mState)));
 
-		first = mRules.at(mState.substr(mState.length() - 1, 1)+"....");
-		second = mRules.at(mState.substr(mState.length() - 2, 2)+"...");
-		if (first == '#') {
-			newState.push_back(second);
-			newState.push_back(first);
-		}
-		else if (second == '#') {
-			newState.push_back(second);
-		}
-
-		auto firstPlant = newState.find('#');
-		if (firstPlant != std::string::npos) {
-			newState = newState.substr(firstPlant);
-			newStartId+= firstPlant;
-		}
-
-		auto lastPlant = newState.rfind('#');
-		if (lastPlant != std::string::npos)
-			newState.resize(lastPlant + 1);
-
-		if (newState == mState)
+		if (plantSpan(newState) == plantSpan(mState))
 			repeating = true;
 
 		mState = newState;
