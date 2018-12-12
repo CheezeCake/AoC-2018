@@ -1,48 +1,6 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
-#include <future>
-#include <tuple>
-
-
-std::string getLLCRR(int pot, const std::string& state)
-{
-	if (pot == 0)
-		return ".." + state.substr(0, 3);
-	if (pot == 1)
-		return "." + state.substr(0, 4);
-	if (pot == state.length() - 1)
-		return state.substr(pot - 2, 3) + "..";
-	if (pot == state.length() - 2)
-		return state.substr(pot - 2, 4) + ".";
-	return state.substr(pot - 2, 5);
-}
-
-std::string run(const std::string& state, std::size_t start, std::size_t end,
-				const std::unordered_map<std::string, char>& rules)
-{
-	std::string newState;
-	newState.reserve(end - start);
-
-	for (std::size_t pot = start; pot < end; ++pot) {
-		std::string llcrr{getLLCRR(pot, state)};
-		if (rules.find(llcrr) == std::end(rules)) {
-			newState.push_back('.');
-		}
-		else {
-			newState.push_back(rules.at(llcrr));
-		}
-	}
-
-	return newState;
-}
-std::string runAsync(const std::string& state, const std::unordered_map<std::string, char>& rules)
-{
-	const std::size_t half = state.length() / 2;
-	auto f0 = std::async(run, state, 0, half, rules);
-	auto f1 = std::async(run, state, half, state.length(), rules);
-	return f0.get()+f1.get();
-}
 
 class State
 {
@@ -50,8 +8,41 @@ class State
 	int mStartId;
 	std::unordered_map<std::string, char> mRules;
 
+	static std::string getLLCRR(int pot, const std::string& state)
+	{
+		if (pot == 0)
+			return ".." + state.substr(0, 3);
+		if (pot == 1)
+			return "." + state.substr(0, 4);
+		if (pot == state.length() - 1)
+			return state.substr(pot - 2, 3) + "..";
+		if (pot == state.length() - 2)
+			return state.substr(pot - 2, 4) + ".";
+		return state.substr(pot - 2, 5);
+	}
+
+	static std::string run(const std::string& state,
+						   const std::unordered_map<std::string, char>& rules)
+	{
+		std::string newState;
+		newState.reserve(state.length());
+
+		for (std::size_t pot = 0; pot < state.length(); ++pot) {
+			std::string llcrr{getLLCRR(pot, state)};
+			if (rules.find(llcrr) == std::end(rules)) {
+				newState.push_back('.');
+			}
+			else {
+				newState.push_back(rules.at(llcrr));
+			}
+		}
+
+		return newState;
+	}
+
 public:
-	State(const std::string& initialState, const std::unordered_map<std::string, char>& rules) :
+	State(const std::string& initialState,
+		  const std::unordered_map<std::string, char>& rules) :
 		mState{initialState},
 		mStartId{0},
 		mRules{rules}
@@ -77,7 +68,7 @@ public:
 			--newStartId;
 		}
 
-		newState.append(runAsync(mState, mRules));
+		newState.append(run(mState, mRules));
 
 		first = mRules.at(mState.substr(mState.length() - 1, 1)+"....");
 		second = mRules.at(mState.substr(mState.length() - 2, 2)+"...");
