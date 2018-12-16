@@ -1,11 +1,8 @@
-#include <iostream>
-#include <cstdio>
-#include <string>
 #include <array>
-#include <stdexcept>
+#include <cstdio>
+#include <iostream>
 #include <set>
-#include <vector>
-#include <utility>
+#include <stdexcept>
 
 class VM
 {
