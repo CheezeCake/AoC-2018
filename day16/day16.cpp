@@ -7,8 +7,11 @@
 #include <vector>
 #include <utility>
 
-struct VM
+class VM
 {
+	std::array<int, 4> regs = {0, 0, 0, 0};
+
+public:
 	struct Instr
 	{
 		int opcode;
@@ -16,8 +19,6 @@ struct VM
 		int B;
 		int C;
 	};
-
-	std::array<int, 4> regs = {0, 0, 0, 0};
 
 	int fetchRegister(int r)
 	{
