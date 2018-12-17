@@ -9,15 +9,30 @@
 #include <limits>
 #include <algorithm>
 
-using Point = std::pair<int, int>;
+struct Point
+{
+	int x;
+	int y;
+};
+
+bool operator<(const Point& lhs, const Point& rhs)
+{
+	return (lhs.y < rhs.y || (lhs.y == rhs.y && lhs.x < rhs.x));
+}
 
 enum class Type { Clay, /*Sand,*/ WetSand, Water };
 
-std::pair<int, int> range(const std::string& range)
+struct Range
 {
-	std::pair<int, int> r;
-	r.first = std::stoi(range.substr(0, range.find('.')));
-	r.second = std::stoi(range.substr(range.rfind('.') + 1));
+	int min;
+	int max;
+};
+
+Range range(const std::string& range)
+{
+	Range r;
+	r.min = std::stoi(range.substr(0, range.find('.')));
+	r.max = std::stoi(range.substr(range.rfind('.') + 1));
 	return r;
 }
 
@@ -49,17 +64,12 @@ std::map<Point, Type> readInput()
 
 	std::string line;
 	while (std::getline(std::cin, line)) {
-		auto var1{line.substr(0, 1)};
-		auto equals{line.find('=')};
-		auto sep{line.find(", ")};
-		int var1Val{std::stoi(line.substr(equals + 1, sep - equals))};
-
-		equals = line.find('=', equals + 2);
-		auto var2{line.substr(sep + 2, 1)};
-		auto range{line.substr(equals + 1)};
+		char var1{line[0]};
+		int var1Val{std::stoi(line.substr(2, line.find(',') - 2))};
+		auto range{line.substr(line.rfind('=') + 1)};
 
 		std::vector<Point> points;
-		if (var1 == "x")
+		if (var1 == 'x')
 			points = yRange(var1Val, range);
 		else
 			points = xRange(range, var1Val);
@@ -71,9 +81,13 @@ std::map<Point, Type> readInput()
 	return input;
 }
 
-using Bounds = std::pair<int, int>;
+struct Bounds
+{
+	Range X;
+	Range Y;
+};
 
-std::pair<Bounds, Bounds> bounds(const std::map<Point, Type>& points)
+Bounds bounds(const std::map<Point, Type>& points)
 {
 	int yMin{std::numeric_limits<int>::max()};
 	int yMax{std::numeric_limits<int>::min()};
@@ -81,107 +95,64 @@ std::pair<Bounds, Bounds> bounds(const std::map<Point, Type>& points)
 	int xMax{std::numeric_limits<int>::min()};
 
 	for (const auto& [p, t] : points) {
-		yMin = std::min(yMin, p.second);
-		yMax = std::max(yMax, p.second);
+		yMin = std::min(yMin, p.y);
+		yMax = std::max(yMax, p.y);
 
-		xMin = std::min(xMin, p.first);
-		xMax = std::max(xMax, p.first);
+		xMin = std::min(xMin, p.x);
+		xMax = std::max(xMax, p.x);
 	}
 
 	return {{xMin, xMax}, {yMin, yMax}};
 }
 
-bool canSpread(const Point& p, const std::pair<Bounds, Bounds>& bounds, const std::map<Point, Type>& tiles)
+void setOverflow(int xFrom, int xTo, int y, int dir, std::map<Point, Type>& tiles)
 {
-	bool ok{false};
-	for (int x = p.first - 1; !ok && x >= bounds.first.first; --x) {
-		const auto& tile{tiles.find({x, p.second})};
+	for (int x{xFrom}; x != xTo + dir; x += dir) {
+		auto tile = tiles.find({x, y});
 		if (tile != std::end(tiles)) {
 			if (tile->second == Type::Clay)
-				ok = true;
-			else // visited
-				return false;
+				break;
+			tile->second = Type::WetSand;
 		}
 	}
-	if (!ok) return false;
-	for (int x = p.first + 1; x <= bounds.first.second; ++x) {
-		const auto& tile{tiles.find({x, p.second})};
-		if (tile != std::end(tiles)) {
-			if (tile->second == Type::Clay)
-				return true;
-			else // visited
-				return false;
-		}
-	}
-	return false;
 }
 
-bool flow(Point current, std::map<Point, Type>& tiles, const std::pair<Bounds, Bounds>& bounds, bool dw=true)
+bool flow(Point current, std::map<Point, Type>& tiles, const Bounds& bounds)
 {
 	if (tiles.find(current) != std::end(tiles))
 		return false;
 
 	auto [x, y] = current;
-	if (y > bounds.second.second)
+	if (y > bounds.Y.max)
 		return true;
 
-	tiles.emplace(current, Type::Water);
-	std::cout << x << ", " << y << '\n';
-
-	if (dw && tiles.find({x, y + 1}) != std::end(tiles) && tiles.at({x, y + 1}) != Type::Clay && !canSpread(current, bounds, tiles)) {
-		tiles[current] = Type::WetSand;
-		return true;
-	}
-
-	bool s = false;
-	s = flow({x, y + 1}, tiles, bounds, true);
-
-	if (!s) {
-		bool l = false, r = false;
-		// left and right
-		l = flow({x - 1, y}, tiles, bounds, false);
-		r = flow({x + 1, y}, tiles, bounds, false);
-		if (l || r) {
-			tiles[current] = Type::WetSand;
-			if (r) {
-				for (int lx{x - 1}; lx >= bounds.first.first; --lx) {
-					auto tile = tiles.find({lx, y});
-					if (tile != std::end(tiles)) {
-						if (tile->second == Type::Clay)
-							break;
-						tile->second = Type::WetSand;
-					}
-				}
-			}
-			if (l) {
-				for (int rx{x + 1}; rx <= bounds.first.second; ++rx) {
-					auto tile = tiles.find({rx, y});
-					if (tile != std::end(tiles)) {
-						if (tile->second == Type::Clay)
-							break;
-						tile->second = Type::WetSand;
-					}
-				}
-			}
-		}
-		return (l || r);
-	}
 	tiles[current] = Type::WetSand;
-	return true;
+
+	if (tiles.find({x, y + 1}) != std::end(tiles) && tiles.at({x, y + 1}) == Type::WetSand)
+		return true;
+
+	// down
+	if (flow({x, y + 1}, tiles, bounds))
+		return true;
+
+	// left and right
+	auto l = flow({x - 1, y}, tiles, bounds);
+	auto r = flow({x + 1, y}, tiles, bounds);
+	if (r)
+		setOverflow(x - 1, bounds.X.min, y, -1, tiles);
+	if (l)
+		setOverflow(x + 1, bounds.X.max, y, 1, tiles);
+	if (!l && !r)
+		tiles[current] = Type::Water;
+	return (l || r);
 }
 
-int main()
+void print(const std::map<Point, Type>& tiles, const Bounds& b)
 {
-	auto input{readInput()};
-	auto b = bounds(input);
-
-	flow({500, 0}, input, b);
-
-	/* for (int y{b.second.first}; y <= b.second.second; ++y) { */
-	for (int y{1}; y <= b.second.second; ++y) {
-		for (int x{b.first.first}; x <= b.first.second; ++x) {
-			const auto& tile{input.find({x, y})};
-			if (tile != std::end(input)) {
+	for (int y{1}; y <= b.Y.max; ++y) {
+		for (int x{b.X.min}; x <= b.X.max; ++x) {
+			const auto& tile{tiles.find({x, y})};
+			if (tile != std::end(tiles)) {
 				if (tile->second == Type::Water)
 					std::cout << '~';
 				else if (tile->second == Type::WetSand)
@@ -195,13 +166,21 @@ int main()
 		}
 		std::cout << '\n';
 	}
+}
+
+int main()
+{
+	auto input{readInput()};
+	auto b = bounds(input);
+
+	flow({500, 0}, input, b);
 
 	std::cout << "part 1: " << std::count_if(std::begin(input), std::end(input), [&b](const auto& tile) {
 													const auto& [x, y] = tile.first;
-													return (tile.second != Type::Clay && y >= b.second.first && y <= b.second.second);
+													return (tile.second != Type::Clay && y >= b.Y.min && y <= b.Y.max);
 												 })<< '\n';
 	std::cout << "part 2: " << std::count_if(std::begin(input), std::end(input), [&b](const auto& tile) {
 													const auto& [x, y] = tile.first;
-													return (tile.second == Type::Water && y >= b.second.first && y <= b.second.second);
+													return (tile.second == Type::Water && y >= b.Y.min && y <= b.Y.max);
 												 })<< '\n';
 }
