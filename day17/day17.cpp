@@ -20,7 +20,7 @@ bool operator<(const Point& lhs, const Point& rhs)
 	return (lhs.y < rhs.y || (lhs.y == rhs.y && lhs.x < rhs.x));
 }
 
-enum class Type { Clay, /*Sand,*/ WetSand, Water };
+enum class Type : char { Clay = '#', /*Sand = '.',*/ WetSand = '|', Water = '~'};
 
 struct Range
 {
@@ -152,17 +152,10 @@ void print(const std::map<Point, Type>& tiles, const Bounds& b)
 	for (int y{1}; y <= b.Y.max; ++y) {
 		for (int x{b.X.min}; x <= b.X.max; ++x) {
 			const auto& tile{tiles.find({x, y})};
-			if (tile != std::end(tiles)) {
-				if (tile->second == Type::Water)
-					std::cout << '~';
-				else if (tile->second == Type::WetSand)
-					std::cout << '|';
-				else
-					std::cout << '#';
-			}
-			else {
+			if (tile != std::end(tiles))
+				std::cout << static_cast<char>(tile->second);
+			else
 				std::cout << '.';
-			}
 		}
 		std::cout << '\n';
 	}
@@ -174,6 +167,7 @@ int main()
 	auto b = bounds(input);
 
 	flow({500, 0}, input, b);
+	/* print(input, b); */
 
 	std::cout << "part 1: " << std::count_if(std::begin(input), std::end(input), [&b](const auto& tile) {
 													const auto& [x, y] = tile.first;
