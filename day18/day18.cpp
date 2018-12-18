@@ -130,12 +130,11 @@ int main()
 			repeatedValue = rv;
 			if (consecutiveRepeats++ == 50)
 				break;
-			resourceValues[rv] = time;
 		}
 		else {
 			consecutiveRepeats = 0;
-			resourceValues[rv] = time;
 		}
+		resourceValues[rv] = time;
 		++time;
 	}
 
