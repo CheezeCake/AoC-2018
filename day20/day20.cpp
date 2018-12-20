@@ -12,12 +12,6 @@ struct Point
 	int y;
 };
 
-std::ostream& operator<<(std::ostream& os, const Point& p)
-{
-	os << '(' << p.x << ", " << p.y << ')';
-	return os;
-}
-
 bool operator<(const Point& lhs, const Point& rhs)
 {
 	return (lhs.y < rhs.y || (lhs.y == rhs.y && lhs.x < rhs.x));
