@@ -34,24 +34,27 @@ int main()
 
 	char c;
 	while (std::cin >> c) {
-		if (c == '^' || c == '$')
-			continue;
-		if (c == '(') {
-			positions.push(currentPos);
-		}
-		else if (c == ')') {
-			currentPos = positions.top();
-			positions.pop();
-		}
-		else if (c == '|') {
-			currentPos = positions.top();
-		}
-		else {
-			auto nextPosition{currentPos + directions.at(c)};
-			auto dist{distances[currentPos] + 1};
-			if (distances.find(nextPosition) == std::end(distances) || dist < distances.at(nextPosition))
-				distances[nextPosition] = dist;
-			currentPos = nextPosition;
+		switch (c) {
+			case '(':
+				positions.push(currentPos);
+				break;
+			case ')':
+				currentPos = positions.top();
+				positions.pop();
+				break;
+			case '|':
+				currentPos = positions.top();
+				break;
+			case 'N':
+			case 'E':
+			case 'S':
+			case 'W':
+				const auto nextPosition{currentPos + directions.at(c)};
+				auto dist{distances[currentPos] + 1};
+				if (distances.find(nextPosition) == std::end(distances) || dist < distances.at(nextPosition))
+					distances[nextPosition] = dist;
+				currentPos = nextPosition;
+				break;
 		}
 	}
 
