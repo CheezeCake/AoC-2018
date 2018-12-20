@@ -37,14 +37,12 @@ int main()
 		{'E', {1, 0}},
 	};
 
-	std::string input;
-	std::getline(std::cin, input);
-
 	Point currentPos{0, 0};
 	std::stack<Point> positions;
 	std::map<Point, int> distances = {{currentPos, 0}};
 
-	for (char c : input) {
+	char c;
+	while (std::cin >> c) {
 		if (c == '^' || c == '$')
 			continue;
 		if (c == '(') {
