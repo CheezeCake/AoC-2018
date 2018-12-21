@@ -91,10 +91,10 @@ class VM
 			else if (i.name == "muli") {
 				setRegister(i.C, getRegister(i.A) * i.B);
 			}
-			else if (i.name == "bandr") {
+			else if (i.name == "banr") {
 				setRegister(i.C, getRegister(i.A) & getRegister(i.B));
 			}
-			else if (i.name == "bandi") {
+			else if (i.name == "bani") {
 				setRegister(i.C, getRegister(i.A) & i.B);
 			}
 			else if (i.name == "borr") {
