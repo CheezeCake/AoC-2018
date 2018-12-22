@@ -9,38 +9,33 @@
 
 using Grid = std::vector<std::vector<int>>;
 
+constexpr unsigned BEYOND_TARGET{100};
+
 Grid createGrid(unsigned depth, unsigned targetX, unsigned targetY)
 {
 	Grid grid;
-	std::vector<unsigned> prevLineErosionLevel(targetX + 100, 0);
-
-	grid.resize(targetY + 100);
+	std::vector<unsigned> prevLineErosionLevel(targetX + BEYOND_TARGET, 0);
+	grid.resize(targetY + BEYOND_TARGET);
 
 	for (unsigned y{0}; y < grid.size(); ++y) {
-		std::vector<unsigned> curLineErosionLevel(targetX + 100, 0);
+		std::vector<unsigned> curLineErosionLevel(targetX + BEYOND_TARGET, 0);
+		grid[y].resize(targetX + BEYOND_TARGET);
 
-		grid[y].resize(targetX + 100);
 		for (unsigned x{0}; x < grid[y].size(); ++x) {
-			unsigned geoIndex = 0;
-			if (x == 0 && y == 0) {
+			unsigned geoIndex;
+			if ((x == 0 && y == 0) || (x == targetX && y == targetY))
 				geoIndex = 0;
-			}
-			else if (x == targetX && y == targetY) {
-				geoIndex = 0;
-			}
-			else if (y == 0) {
+			else if (y == 0)
 				geoIndex = x * 16807;
-			}
-			else if (x == 0) {
+			else if (x == 0)
 				geoIndex = y * 48271;
-			}
-			else {
+			else
 				geoIndex = curLineErosionLevel[x - 1] * prevLineErosionLevel[x];
-			}
 
 			curLineErosionLevel[x] = (geoIndex + depth) % 20183;
 			grid[y][x] = curLineErosionLevel[x] % 3;
 		}
+
 		prevLineErosionLevel = curLineErosionLevel;
 	}
 
