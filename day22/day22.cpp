@@ -118,7 +118,7 @@ int main()
 	std::scanf("depth: %u\n", &depth);
 	std::scanf("target: %u,%u\n", &targetX, &targetY);
 
-	auto grid = createGrid(depth, targetX, targetY);
+	const auto grid = createGrid(depth, targetX, targetY);
 	std::cout << "part 1: " << riskLevel(grid, targetX, targetY) << '\n';
 	std::cout << "part 2: " << fastestPath(grid, targetX, targetY) << '\n';
 }
