@@ -1,4 +1,5 @@
 #include <array>
+#include <algorithm>
 #include <cstdio>
 #include <iostream>
 #include <numeric>
@@ -61,17 +62,42 @@ inline bool valid(const Grid& grid, int x, int y)
 	return (y >= 0 && y < grid.size() && x >= 0 && x < grid[y].size());
 }
 
-int fastestPath(const Grid& grid, unsigned targetX, unsigned targetY)
+std::array<Tools, 2> regionTools(Type region)
 {
-	std::priority_queue<TimeState, std::vector<TimeState>, std::greater<TimeState>> q;
-	std::set<State> seen;
+	if (region == Type::Rocky)
+		return {Tools::Torch, Tools::ClimbingGear};
+	if (region == Type::Wet)
+		return {Tools::Neither, Tools::ClimbingGear};
+	return {Tools::Neither, Tools::Torch};
+}
 
+std::vector<std::tuple<int, int>> neighbors(const Grid& grid, int x, int y)
+{
 	const std::array<const std::tuple<int, int>, 4> directions = {{
 		{-1, 0},
 		{0, -1},
 		{1, 0},
 		{0, 1},
 	}};
+
+	std::vector<std::tuple<int, int>> result;
+	result.reserve(directions.size());
+
+	for (const auto& dir : directions) {
+		auto [dx, dy] = dir;
+		auto nx = x + dx;
+		auto ny = y + dy;
+		if (valid(grid, nx, ny))
+			result.push_back({nx, ny});
+	}
+
+	return result;
+}
+
+int fastestPath(const Grid& grid, unsigned targetX, unsigned targetY)
+{
+	std::priority_queue<TimeState, std::vector<TimeState>, std::greater<TimeState>> q;
+	std::set<State> seen;
 
 	q.emplace(0, 0, 0, Tools::Torch);
 
@@ -85,25 +111,16 @@ int fastestPath(const Grid& grid, unsigned targetX, unsigned targetY)
 			continue;
 		seen.emplace(x, y, tool);
 
-		if (tool != Tools::Neither && (grid[y][x] == Type::Wet || grid[y][x] == Type::Narrow))
-			q.emplace(time + 7, x, y, Tools::Neither);
-		if (tool != Tools::Torch  && (grid[y][x] == Type::Rocky || grid[y][x] == Type::Narrow))
-			q.emplace(time + 7, x, y, Tools::Torch);
-		if (tool != Tools::ClimbingGear  && (grid[y][x] == Type::Rocky || grid[y][x] == Type::Wet))
-			q.emplace(time + 7, x, y, Tools::ClimbingGear);
+		for (auto newTool : regionTools(static_cast<Type>(grid[y][x]))) {
+			if (newTool != tool)
+				q.emplace(time + 7, x, y, newTool);
+		}
 
-		for (const auto& dir : directions) {
-			auto [dx, dy] = dir;
-			auto nx = x + dx;
-			auto ny = y + dy;
-			if (valid(grid, nx, ny)) {
-				if ((grid[ny][nx] == Type::Rocky && tool != Tools::Neither) ||
-					(grid[ny][nx] == Type::Wet && tool != Tools::Torch) ||
-					(grid[ny][nx] == Type::Narrow && tool != Tools::ClimbingGear))
-				{
-					q.emplace(time + 1, nx, ny, tool);
-				}
-			}
+		for (const auto& n : neighbors(grid, x, y)) {
+			auto [nx, ny] = n;
+			const auto validTools = regionTools(static_cast<Type>(grid[ny][nx]));
+			if (std::find(std::begin(validTools), std::end(validTools), tool) != std::end(validTools))
+				q.emplace(time + 1, nx, ny, tool);
 		}
 	}
 
