@@ -56,11 +56,11 @@ int main()
 	const auto& m = *std::max_element(std::begin(nanobots), std::end(nanobots), [](const auto& lhs, const auto& rhs) { return (lhs.r < rhs.r); });
 	std::cout << "part 1: " << std::count_if(std::begin(nanobots), std::end(nanobots), [&m](const auto& b) { return m.inRange(b); }) << '\n';
 
-	int max{0};
+	int maxBots{0};
 	Point best{0, 0, 0};
 	for (int factor{1'000'000}; factor >= 1; factor /= 10) {
 	/* for (int factor{1}; factor >= 1; factor /= 10) { */
-		max = 0;
+		maxBots = 0;
 
 		best.x *= 10;
 		best.y *= 10;
@@ -75,7 +75,7 @@ int main()
 		}
 
 		Point newBest;
-		int range{50};
+		constexpr int range{50};
 		for (int dx{-range}; dx <= range; ++dx) {
 			for (int dy{-range}; dy <= range; ++dy) {
 				for (int dz{-range}; dz <= range; ++dz) {
@@ -89,9 +89,9 @@ int main()
 						}
 					}
 
-					if (cnt > max) {
+					if (cnt > maxBots) {
 						/* std::cout << p << ", cnt=" << cnt << '\n'; */
-						max = cnt;
+						maxBots = cnt;
 						newBest = p;
 					}
 				}
@@ -100,7 +100,7 @@ int main()
 		best = newBest;
 	}
 
-	/* std::cout << "max bots: " << max << " for " << best << '\n'; */
+	/* std::cout << "max bots: " << maxBots << " for " << best << '\n'; */
 	std::cout << best.distance({0, 0, 0}) << '\n';
 
 }
