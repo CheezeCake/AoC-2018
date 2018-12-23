@@ -76,15 +76,8 @@ int main()
 		for (int dx{-range}; dx <= range; ++dx) {
 			for (int dy{-range}; dy <= range; ++dy) {
 				for (int dz{-range}; dz <= range; ++dz) {
-					int cnt{0};
 					Point p = best + Point{dx, dy, dz};
-
-					for (const auto& b : bots) {
-						if (b.inRange(p)) {
-							++cnt;
-						}
-					}
-
+					auto cnt = std::count_if(std::begin(bots), std::end(bots), [&p](const auto& b) { return b.inRange(p); });
 					if (cnt > maxBots) {
 						maxBots = cnt;
 						newBest = p;
