@@ -1,10 +1,9 @@
-#include <iostream>
-#include <cstdio>
-#include <vector>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
-#include <map>
+#include <iostream>
+#include <vector>
 
 struct Point
 {
