@@ -55,11 +55,9 @@ int main()
 	const auto& m = *std::max_element(std::begin(nanobots), std::end(nanobots), [](const auto& lhs, const auto& rhs) { return (lhs.r < rhs.r); });
 	std::cout << "part 1: " << std::count_if(std::begin(nanobots), std::end(nanobots), [&m](const auto& b) { return m.inRange(b); }) << '\n';
 
-	int maxBots{0};
 	Point best{0, 0, 0};
 	for (int factor{1'000'000}; factor >= 1; factor /= 10) {
-	/* for (int factor{1}; factor >= 1; factor /= 10) { */
-		maxBots = 0;
+		int maxBots{0};
 
 		best.x *= 10;
 		best.y *= 10;
@@ -83,13 +81,11 @@ int main()
 
 					for (const auto& b : bots) {
 						if (b.inRange(p)) {
-							/* std::cout << p << " is in range of " << b.pos << " r = " << b.r << '\n'; */
 							++cnt;
 						}
 					}
 
 					if (cnt > maxBots) {
-						/* std::cout << p << ", cnt=" << cnt << '\n'; */
 						maxBots = cnt;
 						newBest = p;
 					}
@@ -99,7 +95,6 @@ int main()
 		best = newBest;
 	}
 
-	/* std::cout << "max bots: " << maxBots << " for " << best << '\n'; */
-	std::cout << best.distance({0, 0, 0}) << '\n';
+	std::cout << "part 2: " << best.distance({0, 0, 0}) << '\n';
 
 }
