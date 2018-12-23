@@ -24,27 +24,9 @@ std::ostream& operator<<(std::ostream& os, const Point& p)
 	return os;
 }
 
-bool operator<(const Point& lhs, const Point& rhs)
-{
-	if (lhs.x < rhs.x)
-		return true;
-	if (lhs.x > rhs.x)
-		return false;
-	if (lhs.y < rhs.y)
-		return true;
-	if (lhs.y > rhs.y)
-		return false;
-	return (lhs.z < rhs.z);
-}
-
 Point operator+(const Point& lhs, const Point& rhs)
 {
 	return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
-}
-
-Point operator-(const Point& lhs, const Point& rhs)
-{
-	return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
 }
 
 struct Nanobot
@@ -72,14 +54,7 @@ int main()
 		nanobots.push_back(n);
 
 	const auto& m = *std::max_element(std::begin(nanobots), std::end(nanobots), [](const auto& lhs, const auto& rhs) { return (lhs.r < rhs.r); });
-
-	int cnt{0};
-	for (const auto& nbot : nanobots) {
-		if (m.inRange(nbot))
-			++cnt;
-	}
-
-	std::cout << "part 1: " << cnt << '\n';
+	std::cout << "part 1: " << std::count_if(std::begin(nanobots), std::end(nanobots), [&m](const auto& b) { return m.inRange(b); }) << '\n';
 
 	int max{0};
 	Point best{0, 0, 0};
