@@ -96,11 +96,11 @@ class Battle
 			if (damage == 0)
 				continue;
 
-			if (!target || damage > possibleDamage ||
+			if (damage > possibleDamage ||
 				(damage == possibleDamage &&
-				 mGroups[i].getEffectivePower() > mGroups[*target].getEffectivePower()) ||
-				(mGroups[i].getEffectivePower() == mGroups[*target].getEffectivePower() &&
-				 mGroups[i].initiative > mGroups[*target].initiative))
+				 (mGroups[i].getEffectivePower() > mGroups[*target].getEffectivePower() ||
+				  (mGroups[i].getEffectivePower() == mGroups[*target].getEffectivePower() &&
+				   mGroups[i].initiative > mGroups[*target].initiative))))
 			{
 				target = i;
 				possibleDamage = damage;
