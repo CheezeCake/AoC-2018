@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <bitset>
 #include <iostream>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -69,7 +70,6 @@ struct Group
 	}
 };
 
-
 class Battle
 {
 	std::vector<Group> mGroups;
@@ -131,32 +131,12 @@ class Battle
 		return true;
 	}
 
-	Army winner() const
+	std::optional<Army> winner() const
 	{
-		for (const auto& g : mGroups) {
-			if (g.isAlive())
-				return g.army;
-		}
-		std::cerr << "no winner???\n";
-		return Army::Infection;
+		auto g = std::find_if(std::begin(mGroups), std::end(mGroups), [](const auto& g) { return g.isAlive(); });
+		return (g != std::end(mGroups)) ? g->army : std::optional<Army>{};
 	}
 
-	void printGroups() const
-	{
-		for (int i = 0; i < mGroups.size(); ++i) {
-			if (!mGroups[i].isAlive())
-				continue;
-
-			std::cout << '[' << i << "] ";
-			if (mGroups[i].army == Army::ImmuneSystem)
-				std::cout << "IS: ";
-			else
-				std::cout << "Infection: ";
-			std::cout << mGroups[i].units << " units";
-
-			std::cout << '\n';
-		}
-	}
 
 	int fight()
 	{
@@ -217,13 +197,9 @@ public:
 
 	int unitSum() const
 	{
-		int sum{0};
-		for (const auto& g : mGroups) {
-			if (!g.isAlive())
-				continue;
-			sum += g.units;
-		}
-		return sum;
+		return std::accumulate(std::begin(mGroups), std::end(mGroups), 0, [](int n, const auto& g) {
+								return n + ((g.isAlive()) ? g.units : 0);
+							   });
 	}
 };
 
@@ -336,11 +312,9 @@ int main()
 	}
 
 	for (int boost = 1; ; ++boost) {
-		/* std::cout << "trying boost=" << boost << '\n'; */
 		Battle b{groups, boost};
 		auto winner = b.play();
 		if (winner && *winner == Army::ImmuneSystem) {
-			/* std::cout << "boost=" << boost << '\n'; */
 			std::cout << "part 2: " << b.unitSum() << '\n';
 			return 0;
 		}
