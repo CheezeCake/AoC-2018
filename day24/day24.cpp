@@ -1,12 +1,10 @@
-#include <iostream>
-#include <cstdio>
-#include <string>
-#include <bitset>
-#include <vector>
-#include <unordered_map>
-#include <map>
 #include <algorithm>
+#include <bitset>
+#include <iostream>
 #include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 enum class Army { ImmuneSystem, Infection };
 
@@ -61,11 +59,13 @@ struct Group
 		return damage;
 	}
 
-	void attack(Group& target) const
+	int attack(Group& target) const
 	{
-		auto deaths = possibleDamage(target) / target.hpPerUnit;
-		/* std::cout << "killing " << deaths << " units"; */
+		int deaths = possibleDamage(target) / target.hpPerUnit;
 		target.units -= deaths;
+		if (target.units < 0)
+			target.units = 0;
+		return deaths;
 	}
 };
 
@@ -93,8 +93,19 @@ class Battle
 				continue;
 
 			auto damage = mGroups[attacker].possibleDamage(mGroups[i]);
-			/* std::cout << '[' << attacker << "] would deal to group [" << i << "] " << damage << " damage\n"; */
-			if (damage > possibleDamage) {
+			if (damage == 0)
+				continue;
+
+			if (damage >= possibleDamage) {
+				if (target) {
+					if (damage == possibleDamage &&
+						mGroups[i].getEffectivePower() < mGroups[*target].getEffectivePower())
+						continue;
+					else if (mGroups[i].getEffectivePower() == mGroups[*target].getEffectivePower() &&
+							 mGroups[i].initiative < mGroups[*target].initiative)
+						continue;
+				}
+
 				target = i;
 				possibleDamage = damage;
 			}
@@ -151,12 +162,10 @@ class Battle
 		}
 	}
 
-	void fight()
+	int fight()
 	{
 		std::vector<std::pair<int, int>> targets;
 		std::vector<bool> selected(mGroups.size(), false);
-
-		/* printGroups(); */
 
 		for (int i = 0; i < mGroups.size(); ++i) {
 			if (!mGroups[i].isAlive())
@@ -173,17 +182,17 @@ class Battle
 					return (mGroups[lhs.first].initiative > mGroups[rhs.first].initiative);
 				  });
 
+		int damageSum{0};
 		for (auto [attacker, target] : targets) {
 			if (!mGroups[attacker].isAlive())
 				continue;
 
-			/* std::cout << '[' << attacker << "] attacks group [" << target << "] "; */
-			mGroups[attacker].attack(mGroups[target]);
-			/* std::cout << '\n'; */
+			damageSum += mGroups[attacker].attack(mGroups[target]);
 		}
-		/* std::cout << '\n'; */
 
 		update();
+
+		return damageSum;
 	}
 public:
 	Battle(const std::vector<Group>& groups, int isBoost = 0) :
@@ -197,10 +206,14 @@ public:
 		}
 	}
 
-	Army play()
+	std::optional<Army> play()
 	{
 		while (!done()) {
-			fight();
+			auto dmg = fight();
+			if (dmg == 0) {
+				/* std::cout << "stopping\n"; */
+				return {};
+			}
 		}
 
 		return winner();
@@ -238,7 +251,7 @@ AttackTypes parseTypes(const std::string& str)
 	return types;
 }
 
-int main()
+std::vector<Group> parseGroups()
 {
 	std::string line;
 	std::getline(std::cin, line);
@@ -313,6 +326,12 @@ int main()
 		groups.push_back(g);
 	}
 
+	return groups;
+}
+
+int main()
+{
+	const auto groups = parseGroups();
 
 	{
 		Battle b{groups};
@@ -321,8 +340,10 @@ int main()
 	}
 
 	for (int boost = 1; ; ++boost) {
+		/* std::cout << "trying boost=" << boost << '\n'; */
 		Battle b{groups, boost};
-		if (b.play() == Army::ImmuneSystem) {
+		auto winner = b.play();
+		if (winner && *winner == Army::ImmuneSystem) {
 			/* std::cout << "boost=" << boost << '\n'; */
 			std::cout << "part 2: " << b.unitSum() << '\n';
 			return 0;
