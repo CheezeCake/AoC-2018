@@ -194,12 +194,12 @@ public:
 	Battle(const std::vector<Group>& groups, int isBoost = 0) :
 		mGroups{groups}
 	{
-		update();
-
 		for (auto& g : mGroups) {
 			if (g.army == Army::ImmuneSystem)
 				g.attackPoints += isBoost;
 		}
+
+		update();
 	}
 
 	std::optional<Army> play()
